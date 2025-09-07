@@ -29,9 +29,9 @@ export default async function handler(req, res) {
     const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/);
     const ipn = ipnMatch ? ipnMatch[1] : null;
 
-    // 3. Цена - любая сумма 3-4 цифры с ",00"
-    const priceMatch = fullText.match(/(\d{3,4})\s*,\s*00/);
-    const price = priceMatch ? priceMatch[1].replace(/\s/g, '') : null;
+    // 3. Цена - ищем в разделе "15. Розмір страхової премії"
+    const priceMatch = fullText.match(/15\.\s*Розмір\s+страхової\s+премії[^0-9]*(\d{3,4})/);
+    const price = priceMatch ? priceMatch[1] : null;
 
     // Возвращаем результат в формате price|ipn|policy_number
     const result = `${price || ''}|${ipn || ''}|${policyNumber || ''}`;
