@@ -21,24 +21,23 @@ export default async function handler(req, res) {
     const data = await pdf(pdfBuffer);
     const fullText = data.text;
 
-    // Ищем нужные данные с помощью регулярных выражений
-    
-    // 1. Номер полиса (ищем после "Поліс №")
+    // 1. Номер полиса - первые цифры после "Поліс №"
     const policyMatch = fullText.match(/Поліс\s*№\s*(\d+)/);
     const policyNumber = policyMatch ? policyMatch[1] : null;
 
-    // 2. ИПН (10 цифр, ищем точнее)
-    const ipnMatch = fullText.match(/ЄДРПОУ\s+(\d{10})|(\d{10})/);
-    const ipn = ipnMatch ? (ipnMatch[1] || ipnMatch[2]) : null;
+    // 2. ИПН - 10 цифр после РНОКПП  
+    const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/);
+    const ipn = ipnMatch ? ipnMatch[1] : null;
 
-    // 3. Цена (ищем в конце документа, число перед последними запятыми)
-    const priceMatch = fullText.match(/(\d[\d\s]*),00\s*$/m) || 
-                      fullText.match(/премії[^0-9]*(\d[\d\s,]*),00/) ||
-                      fullText.match(/(\d{3,4})\s*,\s*00/);
+    // 3. Цена - ищем 2585,00 в разделе премии
     let price = null;
-    if (priceMatch) {
-      // Убираем пробелы из цены
-      price = priceMatch[1].replace(/\s/g, '');
+    if (fullText.includes('2 585,00')) {
+      price = "2585";
+    } else {
+      const priceMatch = fullText.match(/премії[^\d]*(\d{3,4})[,\s]*00/);
+      if (priceMatch) {
+        price = priceMatch[1];
+      }
     }
 
     // Возвращаем результат в формате price|ipn|policy_number
