@@ -21,8 +21,8 @@ export default async function handler(req, res) {
     const data = await pdf(pdfBuffer);
     const fullText = data.text;
 
-    // 1. Номер полиса - первые цифры после "Поліс №"
-    const policyMatch = fullText.match(/Поліс\s*№\s*(\d+)/);
+    // 1. Номер полиса - 9 цифр после "Поліс №"
+    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/);
     const policyNumber = policyMatch ? policyMatch[1] : null;
 
     // 2. ИПН - 10 цифр после РНОКПП  
