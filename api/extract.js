@@ -21,11 +21,12 @@ export default async function handler(req, res) {
     const data = await pdf(pdfBuffer);
     const fullText = data.text;
 
-    // 1. Номер полиса - ищем все варианты написания
-    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/) || 
-                       fullText.match(/№\s*(\d{9})/) ||
-                       fullText.match(/232168892/);
-    const policyNumber = policyMatch ? policyMatch[1] || "232168892" : null;
+    // 1. Номер полиса - ищем разные варианты
+    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{8,9})/) || 
+                       fullText.match(/№\s*(\d{8,9})/) ||
+                       fullText.match(/полісом\s+[^\d]*(\d{8,9})/) ||
+                       fullText.match(/(\d{8,9})/);
+    const policyNumber = policyMatch ? policyMatch[1] : null;
 
     // 2. ИПН - 10 цифр после РНОКПП  
     const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/);
