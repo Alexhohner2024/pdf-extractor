@@ -21,16 +21,21 @@ export default async function handler(req, res) {
     const data = await pdf(pdfBuffer);
     const fullText = data.text;
 
-    // 1. Номер полиса - 9 цифр после "Поліс №"
-    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/);
+    // 1. Номер полиса - ищем везде, где есть 9 цифр
+    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/) || 
+                       fullText.match(/№(\d{9})/) ||
+                       fullText.match(/(\d{9})/);
     const policyNumber = policyMatch ? policyMatch[1] : null;
 
-    // 2. ИПН - 10 цифр после РНОКПП
-    const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/);
+    // 2. ИПН - 10 цифр после РНОКПП или ЄДРПОУ
+    const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/) ||
+                    fullText.match(/ЄДРПОУ[^\d]*(\d{10})/);
     const ipn = ipnMatch ? ipnMatch[1] : null;
 
-    // 3. Цена - ищем в разделе "15. Розмір страхової премії"
-    const priceMatch = fullText.match(/15\.\s*Розмір\s+страхової\s+премії[^0-9]*(\d{3,4})/);
+    // 3. Цена - ищем в разделе 15 или после слова премії
+    const priceMatch = fullText.match(/15\.\s*Розмір\s+страхової\s+премії[^0-9]*(\d{3,4})/) ||
+                      fullText.match(/премії.*?(\d{3,4})\s*,\s*00/) ||
+                      fullText.match(/сплачується.*?(\d{3,4})\s*,\s*00/);
     const price = priceMatch ? priceMatch[1] : null;
 
     // Возвращаем результат в формате price|ipn|policy_number
