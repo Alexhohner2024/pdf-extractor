@@ -21,27 +21,17 @@ export default async function handler(req, res) {
     const data = await pdf(pdfBuffer);
     const fullText = data.text;
 
-    // 1. Номер полиса - ищем разные варианты
-    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{8,9})/) || 
-                       fullText.match(/№\s*(\d{8,9})/) ||
-                       fullText.match(/полісом\s+[^\d]*(\d{8,9})/) ||
-                       fullText.match(/(\d{8,9})/);
+    // 1. Номер полиса - 9 цифр после "Поліс №"
+    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/);
     const policyNumber = policyMatch ? policyMatch[1] : null;
 
-    // 2. ИПН - 10 цифр после РНОКПП  
+    // 2. ИПН - 10 цифр после РНОКПП
     const ipnMatch = fullText.match(/РНОКПП[^\d]*(\d{10})/);
     const ipn = ipnMatch ? ipnMatch[1] : null;
 
-    // 3. Цена - ищем 2585,00 в разделе премии
-    let price = null;
-    if (fullText.includes('2 585,00')) {
-      price = "2585";
-    } else {
-      const priceMatch = fullText.match(/премії[^\d]*(\d{3,4})[,\s]*00/);
-      if (priceMatch) {
-        price = priceMatch[1];
-      }
-    }
+    // 3. Цена - любая сумма 3-4 цифры с ",00"
+    const priceMatch = fullText.match(/(\d{3,4})\s*,\s*00/);
+    const price = priceMatch ? priceMatch[1].replace(/\s/g, '') : null;
 
     // Возвращаем результат в формате price|ipn|policy_number
     const result = `${price || ''}|${ipn || ''}|${policyNumber || ''}`;
