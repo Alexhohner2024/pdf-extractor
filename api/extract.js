@@ -23,20 +23,22 @@ export default async function handler(req, res) {
 
     // Ищем нужные данные с помощью регулярных выражений
     
-    // 1. Номер полиса (9 цифр после "Поліс №")
-    const policyMatch = fullText.match(/Поліс\s*№\s*(\d{9})/);
+    // 1. Номер полиса (ищем после "Поліс №")
+    const policyMatch = fullText.match(/Поліс\s*№\s*(\d+)/);
     const policyNumber = policyMatch ? policyMatch[1] : null;
 
-    // 2. ИПН (10 цифр в разделе 3, обычно после РНОКПП)
-    const ipnMatch = fullText.match(/РНОКПП[^0-9]*(\d{10})/);
-    const ipn = ipnMatch ? ipnMatch[1] : null;
+    // 2. ИПН (10 цифр, ищем точнее)
+    const ipnMatch = fullText.match(/ЄДРПОУ\s+(\d{10})|(\d{10})/);
+    const ipn = ipnMatch ? (ipnMatch[1] || ipnMatch[2]) : null;
 
-    // 3. Цена (ищем в разделе 15, числа с пробелами и запятыми)
-    const priceMatch = fullText.match(/страхової\s+премії[^0-9]*(\d[\d\s,]+)/);
+    // 3. Цена (ищем в конце документа, число перед последними запятыми)
+    const priceMatch = fullText.match(/(\d[\d\s]*),00\s*$/m) || 
+                      fullText.match(/премії[^0-9]*(\d[\d\s,]*),00/) ||
+                      fullText.match(/(\d{3,4})\s*,\s*00/);
     let price = null;
     if (priceMatch) {
-      // Убираем пробелы и запятые из цены
-      price = priceMatch[1].replace(/[\s,]/g, '');
+      // Убираем пробелы из цены
+      price = priceMatch[1].replace(/\s/g, '');
     }
 
     // Возвращаем результат в формате price|ipn|policy_number
