@@ -32,16 +32,16 @@ export default async function handler(req, res) {
                     fullText.match(/ЄДРПОУ[^\d]*(\d{10})/);
     const ipn = ipnMatch ? ipnMatch[1] : null;
 
-    // 3. Цена - ищем разные форматы: "3 907,00" или "907,00"
-    const priceMatch = fullText.match(/(\d)\s+(\d{3})\s*,\s*00/) || 
-                      fullText.match(/(\d{3})\s*,\s*00/);
+    // 3. Цена - ищем в строке "сплачується до або під час укладення Договору"
+    const priceMatch = fullText.match(/Договору\s+(\d)\s+(\d{3}),00/) ||
+                      fullText.match(/Договору\s+(\d{3}),00/) ||
+                      fullText.match(/сплачується[^0-9]*(\d)\s+(\d{3}),00/) ||
+                      fullText.match(/сплачується[^0-9]*(\d{3}),00/);
     let price = null;
     if (priceMatch) {
       if (priceMatch.length === 3) {
-        // Формат "3 907,00" - объединяем
         price = priceMatch[1] + priceMatch[2];
       } else {
-        // Формат "907,00" - берем как есть
         price = priceMatch[1];
       }
     }
