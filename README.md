@@ -1,5 +1,5 @@
 PDF-Extractor
-Automated tool for extracting key data from insurance policy PDF documents. Parses uploaded PDF files and extracts policy number, client IPN, and price for further processing in business workflows.
+Automated tool for extracting key data from PDF documents. Parses uploaded PDF files and extracts informations for further processing in business workflows.
 Technologies: JavaScript, pdf-parse, Vercel
 
 Key Features:
